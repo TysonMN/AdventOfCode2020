@@ -228,8 +228,8 @@ let arrange tilesById =
     |> Seq.toArray
 
   anchor
-  |> gen Tile.areVerticalMatch [ Rotate ]
-  |> Array.map (gen Tile.areHorizontalMatch [ Rotate; Rotate ])
+  |> gen Tile.areVerticalMatch [ Rotate; Rotate ]
+  |> Array.map (gen Tile.areHorizontalMatch [ Rotate ])
 
 module Parse =
   let parsePixel =
