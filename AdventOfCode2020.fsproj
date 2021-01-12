@@ -5,6 +5,7 @@
     <NoWarn>62</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="output\Day20Part2Puzzle.txt" />
     <Content Include="input\Day20.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

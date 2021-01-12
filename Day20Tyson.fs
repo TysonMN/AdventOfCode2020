@@ -294,7 +294,7 @@ let merge (tiles: Tile array array) =
 
 open System.IO
 let run () =
-  File.ReadAllText "input/Day20test.txt"
+  File.ReadAllText "input/Day20.txt"
   |> Parse.parse
   |> arrange
   |> merge
