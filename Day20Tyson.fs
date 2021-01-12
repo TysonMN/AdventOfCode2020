@@ -95,7 +95,7 @@ module Transform =
     body
     |> Seq.map (function
       | Rotate -> Seq.rev << Seq.transpose // rotate counterclockwise
-      | Flip   -> Seq.rev)                 // flip around vertical axis
+      | Flip   -> Seq.rev)                 // flip around horizontal axis
     |> Seq.fold (>>) id
 
 
@@ -161,11 +161,11 @@ module Tile =
 
   let areHorizontalMatch left right =
     (=) (seq { Rotate }       |> flip Transform.reduce left  |> Body.toExactHash)
-        (seq { Flip; Rotate } |> flip Transform.reduce right |> Body.toExactHash)
+        (seq { Rotate; Flip } |> flip Transform.reduce right |> Body.toExactHash)
 
   let areVerticalMatch top bottom =
-    (=) (seq { Flip; Rotate; Rotate } |> flip Transform.reduce top |> Body.toExactHash)
-                                                           (bottom |> Body.toExactHash)
+    (=) (seq { Flip; } |> flip Transform.reduce top |> Body.toExactHash)
+                                            (bottom |> Body.toExactHash)
 
 
 let getBorderPairings =
