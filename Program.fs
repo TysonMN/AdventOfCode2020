@@ -2,5 +2,6 @@ module Program
 
 [<EntryPoint>]
 let main _ =
-  Day20.run ()
+  Day20Tyson.run ()
+  System.Console.ReadKey () |> ignore
   0

@@ -5,6 +5,12 @@
     <NoWarn>62</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="input\Day20.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="input\Day20test.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Day1.fs" />
     <Compile Include="Day2.fs" />
     <Compile Include="Day3.fs" />
@@ -25,6 +31,7 @@
     <Compile Include="Day18.fs" />
     <Compile Include="Day19.fs" />
     <Compile Include="Day20.fs" />
+    <Compile Include="Day20Tyson.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
