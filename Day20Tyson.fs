@@ -148,7 +148,7 @@ module Tile =
       (Body.get
        >> Body.toHash
        >> flip List.contains matchedBorderHashes
-       >> function true -> 1 | false -> 0)
+       >> function true -> 0 | false -> 1)
     |> SeqPair.scan2 (+) 0
     |> SeqPair.filter2 ((=) 2)
     |> Seq.map fst
