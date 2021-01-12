@@ -13,10 +13,11 @@ type Tile = {
   Body: TileBody
 }
 
-type BorderHash = int16
+type ExactBorderHash = int16
+type MinBorderHash = int16
 type Border = {
   TileId: TileId
-  Hash: BorderHash
+  Hash: MinBorderHash
 }
 
 
@@ -101,16 +102,20 @@ module Transform =
 module Border =
 
   let private toBit = function Black -> 1s | White -> 0s
+  let private f = Seq.fold (fun s -> toBit >> (+) (s <<< 1)) 0s
 
-  let toHash source : BorderHash =
-    let f = Seq.fold (fun s -> toBit >> (+) (s <<< 1)) 0s
+  let toExactHash source : ExactBorderHash =
+    source |> f
+
+  let toMinHash source : MinBorderHash =
     min (source |> f)
         (source |> Seq.rev |> f)
 
 
 module Body =
 
-  let toHash body = body |> Seq.head |> Border.toHash
+  let toExactHash body = body |> Seq.head |> Border.toExactHash
+  let toMinHash   body = body |> Seq.head |> Border.toMinHash
 
 
 module Tile =
@@ -127,7 +132,7 @@ module Tile =
   let getBorders tile =
     let makeBorder f =
       (tile.Id,
-       tile.Body |> f |> Body.toHash)
+       tile.Body |> f |> Body.toMinHash)
     seq {
       Seq.empty
       seq { Rotate }
@@ -136,7 +141,7 @@ module Tile =
     }
     |> Seq.map (Transform.reduce >> makeBorder)
 
-  let orientTopLeftCorner matchedBorderHashes tile =
+  let orientTopLeftCorner matchedMinBorderHashes tile =
     List.empty
     |> Seq.unfold (fun ma -> Some (ma, Rotate :: ma))
     |> Seq.map
@@ -146,8 +151,8 @@ module Tile =
        >> Pair.ofSingle)
     |> SeqPair.map2
       (Body.get
-       >> Body.toHash
-       >> flip List.contains matchedBorderHashes
+       >> Body.toMinHash
+       >> flip List.contains matchedMinBorderHashes
        >> function true -> 0 | false -> 1)
     |> SeqPair.scan2 (+) 0
     |> SeqPair.filter2 ((=) 2)
@@ -155,12 +160,12 @@ module Tile =
     |> Seq.head
 
   let areHorizontalMatch left right =
-    (=) (seq { Rotate }       |> flip Transform.reduce left  |> Body.toHash)
-        (seq { Flip; Rotate } |> flip Transform.reduce right |> Body.toHash)
+    (=) (seq { Rotate }       |> flip Transform.reduce left  |> Body.toExactHash)
+        (seq { Flip; Rotate } |> flip Transform.reduce right |> Body.toExactHash)
 
   let areVerticalMatch top bottom =
-    (=) (seq { Flip; Rotate; Rotate } |> flip Transform.reduce top |> Body.toHash)
-                                                           (bottom |> Body.toHash)
+    (=) (seq { Flip; Rotate; Rotate } |> flip Transform.reduce top |> Body.toExactHash)
+                                                           (bottom |> Body.toExactHash)
 
 
 let getBorderPairings =
@@ -173,13 +178,13 @@ let getBorderPairings =
 
 let getNextTile
     (tilesById: Map<TileId, Tile>)
-    (tileIdsByBorderHash: Map<BorderHash, TileId seq>)
-    (hashPreviousTile: Tile -> BorderHash)
+    (tileIdsByMinBorderHash: Map<MinBorderHash, TileId seq>)
+    (minHashPreviousTile: Tile -> MinBorderHash)
     (areMatch: Tile -> Tile -> bool)
     (previousTile: Tile) =
   option {
-    let hash = previousTile |> hashPreviousTile
-    let! tileIds = tileIdsByBorderHash |> Map.tryFind hash
+    let hash = previousTile |> minHashPreviousTile
+    let! tileIds = tileIdsByMinBorderHash |> Map.tryFind hash
     let! nextTileId =
       tileIds
       |> Seq.filter ((<>) previousTile.Id)
@@ -220,7 +225,7 @@ let arrange tilesById =
   let getNextTile = getNextTile tilesById tileIdsByBorderHash
 
   let gen areMatch transforms anchor =
-    let hashPreviousTile = transforms |> Transform.reduce |> Tile.Body.map >> Tile.Body.get >> Body.toHash
+    let hashPreviousTile = transforms |> Transform.reduce |> Tile.Body.map >> Tile.Body.get >> Body.toMinHash
     let areMatch = areMatch |> Func2.uncurry << Pair.mapAll Tile.Body.get |> Func2.curry
     anchor
     |> Seq.unfold (getNextTile hashPreviousTile areMatch)
